@@ -11,6 +11,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "./models/User";
 import UserMessage from "./models/UserMessage";
+import Reminder from "./models/Reminder";
 
 const saltRounds = 6;
 
@@ -58,11 +59,11 @@ export async function searchUserById(id: number) {
 
 export async function getUser(req: Request, res: Response) {
     const userId = req.params.userId;
-    try{
+    try {
         const user = await User.find({ userId: parseInt(userId) })
         res.json({ user });
     }
-    catch(err){
+    catch (err) {
         console.log(err)
     }
 }
@@ -73,27 +74,66 @@ export async function createUser(req: Request, res: Response) {
     const username = req.body.username;
     const password = req.body.password;
     const email = req.body.email;
+    const badges = 0;
     if (users.find((user: any) => user.username === username.toString())) {
         res.json({ success: false, message: "Username already exists" })
     }
     else {
         console.log(users.find((user: any) => user.username === username.toString()))
         const encrypted = await bcrypt.hash(password, saltRounds)
-        const user = await User.create({ username, password: encrypted, email, userId })
+        const user = await User.create({ username, password: encrypted, email, userId, badges })
         res.status(200).json({ success: true, message: "Sign up successful!" })
     }
 }
 
-export async function createUserMessage(req: Request, res: Response){
+export async function createUserMessage(req: Request, res: Response) {
     const userMessages = await UserMessage.find({});
     const userMessageId = userMessages.length === 0 ? 1 : userMessages[userMessages.length - 1].userMessageId + 1;
     const email = req.body.email;
     const content = req.body.content;
-    try{
-        await UserMessage.create({email,content,userMessageId});
+    try {
+        await UserMessage.create({ email, content, userMessageId });
         res.status(200).json({ success: true, message: "Message sent successfully!" })
     }
-    catch(err){
+    catch (err) {
+        console.log(err)
+    }
+}
+
+export async function createReminder(req: Request, res: Response) {
+    const reminders = await Reminder.find({})
+    const reminderId = reminders.length === 0 ? 1 : reminders[reminders.length - 1].reminderId + 1
+    const category = req.body.category
+    const title = req.body.title
+    const userId = req.body.userId
+    try {
+        await Reminder.create({ category, title, userId, reminderId })
+        res.status(200).json({ success: true, message: "Reminder created successfully!" })
+    }
+    catch (err) {
+        console.log(err)
+    }
+}
+
+export async function getReminders(req: Request, res: Response) {
+    const userId = req.params.userId
+    try {
+        const reminders = await Reminder.find({ userId })
+        res.json(reminders)
+    }
+    catch (err) {
+        console.log(err)
+    }
+}
+
+export async function completeReminder(req: Request, res: Response) {
+    const reminderId = req.params.reminderId
+    const completed = true
+    try {
+        await Reminder.findOneAndUpdate({ reminderId }, { completed })
+        res.status(200).json({ success: true, message: "Reminder completed successfully!" })
+    }
+    catch (err) {
         console.log(err)
     }
 }

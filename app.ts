@@ -13,6 +13,7 @@ import users from "./routes/users"
 import user from "./routes/user"
 import connectDB from "./connect"
 import usermessages from "./routes/usermessages"
+import reminders from "./routes/reminders"
 
 dotenv.config()
 const app = express()
@@ -28,6 +29,7 @@ app.get("/", (req, res) => {
 app.use("/api/users", users)
 app.use("/api/user", user)
 app.use("/api/user/messages", usermessages)
+app.use("/api/reminders", reminders)
 
 async function start() {
     try {
