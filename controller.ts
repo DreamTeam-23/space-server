@@ -129,8 +129,12 @@ export async function getReminders(req: Request, res: Response) {
 export async function completeReminder(req: Request, res: Response) {
     const reminderId = req.params.reminderId
     const completed = true
+    const userId = req.body.userId
     try {
         await Reminder.findOneAndUpdate({ reminderId }, { completed })
+        const user = await User.findOne({userId})
+        const badges = user.badges + 1
+        await User.findOneAndUpdate({userId}, {badges})
         res.status(200).json({ success: true, message: "Reminder completed successfully!" })
     }
     catch (err) {
